@@ -1,0 +1,93 @@
+<html>
+  <head>
+    <script src="jquery-3.2.1.min.js"></script>
+    <script src="d3.min.js"></script>
+    <script>
+      $(function() {
+        var v = 30;
+        var m = 1000;
+        $("#v").val(v)
+        $("#m").val(m)
+        InitChart(v, m);
+        $("button").click(function () {
+           var v = parseFloat($("#v").val())
+           var m = parseFloat($("#m").val())
+            InitChart(v, m);
+           });
+      });
+
+      function InitChart(v, m){
+        var td = [];
+        const dt = 0.001;
+        var t = 0.0;
+        var d = 0;
+        var i = 0
+        x= 0
+        const dg = 100
+        console.clear()
+        while (v > 0.1  ) {
+          t = t + dt;
+          d = d + dt * v
+          F = v * ((d < 100) ? 0.005 : 0.5)
+          a = F / m
+          v = v - a * dt
+          xn = parseInt(t/dg)
+          if (xn > x){
+            x = xn
+            td.push({"x": t, "y": d});
+            // console.log("100", x, d, F, a, v)
+          }
+        }
+
+        $("#d").val(d);
+        $("#t").val(t);
+
+        var vis = d3.select("#svgVisualize");
+        // vis.remove()
+        var xRange = d3.scaleLinear().range([40, 400]).domain([d3.min(td, function (d) {
+                            return (d.x);
+                        }),
+                        d3.max(td, function (d) {
+                            return d.x;
+                        })]);
+        var yRange = d3.scaleLinear().range([400, 40]).domain([d3.min(td, function (d) {
+                            return d.y;
+                        }),
+                        d3.max(td, function (d) {
+                            return d.y;
+                        })]);
+        var xAxis = d3.axisBottom().scale(xRange);
+        var yAxis = d3.axisLeft().scale(yRange);
+        vis.selectAll("*").remove()
+        vis.append("svg:g").call(xAxis).attr("transform", "translate(0,400)");
+        vis.append("svg:g").call(yAxis).attr("transform", "translate(40,0)");
+        var circles = vis.selectAll("circle").data(td);
+    circles
+        .enter()
+        .insert("circle")
+        .attr("cx", function (d) { return xRange (d.x); })
+        .attr("cy", function (d) { return yRange (d.y); })
+        .attr("r", 1)
+        .style("fill", "red");
+} 
+    </script>
+  </head>
+  <body>
+      <fieldset>
+          <label>velocity</label>
+          <input id="v" type="number" size="40">
+          <br>
+          <label>weight</label>
+          <input id="m" type="number" size="40">
+          <br>
+            <label> distance</label>
+        <input id="d" type="text" size="40" readonly>
+        <br>
+        <label>time</label>
+        <input id="t" type="text" size="40" readonly>
+        <br>
+        <button>Calculate</button>                      
+    </fieldset>
+    <svg id="svgVisualize" width="1000" height="500"></svg>
+  </body>
+</html>
